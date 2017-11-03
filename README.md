@@ -1,2 +1,2 @@
 # sydney-workshop
-OpenStack-Helm Syndey Workshop
+OpenStack-Helm Sydney Workshop
