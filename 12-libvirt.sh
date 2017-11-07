@@ -1,8 +1,14 @@
 #!/bin/bash
 set -x
-WORK_DIR=/opt/openstack-helm
 
-helm install --namespace=openstack ${WORK_DIR}/libvirt --name=libvirt
+#NOTE: Deploy command
+helm install /opt/openstack-helm/libvirt \
+  --namespace=openstack \
+  --name=libvirt
 
-sleep 10
-kubectl get -n openstack pods
+#NOTE: Wait for deploy
+export KUBECONFIG=${HOME}/.kube/config
+/opt/openstack-helm/tools/kubeadm-aio/assets/usr/bin/wait-for-kube-pods openstack
+
+#NOTE: Validate Deployment info
+helm status libvirt

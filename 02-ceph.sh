@@ -1,17 +1,15 @@
 #!/bin/bash
 set -x
-OSD_PUBLIC_NETWORK=172.17.0.1/16
-OSD_CLUSTER_NETWORK=172.17.0.1/16
-WORK_DIR=/opt/openstack-helm
 
-: ${CEPH_RGW_KEYSTONE_ENABLED:="true"}
+#NOTE: Deploy command
+WORK_DIR=/opt/openstack-helm
 helm install --namespace=ceph ${WORK_DIR}/ceph --name=ceph \
     --set endpoints.identity.namespace=openstack \
     --set endpoints.object_store.namespace=ceph \
     --set endpoints.ceph_mon.namespace=ceph \
-    --set ceph.rgw_keystone_auth=${CEPH_RGW_KEYSTONE_ENABLED} \
-    --set network.public=${OSD_PUBLIC_NETWORK} \
-    --set network.cluster=${OSD_CLUSTER_NETWORK} \
+    --set ceph.rgw_keystone_auth=true \
+    --set network.public=172.17.0.1/16 \
+    --set network.cluster=172.17.0.1/16 \
     --set deployment.storage_secrets=true \
     --set deployment.ceph=true \
     --set deployment.rbd_provisioner=true \
@@ -20,11 +18,11 @@ helm install --namespace=ceph ${WORK_DIR}/ceph --name=ceph \
     --set bootstrap.enabled=true \
     --values=${WORK_DIR}/tools/overrides/mvp/ceph.yaml
 
-sleep 10
-kubectl get -n ceph pods
-sleep 60
-kubectl get -n ceph pods
+#NOTE: Wait for deploy
+export KUBECONFIG=${HOME}/.kube/config
+/opt/openstack-helm/tools/kubeadm-aio/assets/usr/bin/wait-for-kube-pods ceph
 
+#NOTE: Validate deploy
 MON_POD=$(kubectl get pods \
   --namespace=ceph \
   --selector="application=ceph" \

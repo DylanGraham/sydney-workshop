@@ -6,12 +6,12 @@ sudo -H sed -i 's|PasswordAuthentication no|PasswordAuthentication yes|g' /etc/s
 sudo -H systemctl restart sshd
 
 sudo -H apt-get update
-sudo -H apt-get install -y git jq
+sudo -H apt-get install -y git jq nmap
 
 sudo -H chown -R ubuntu: /opt
 
 sudo -H su -c 'git clone https://git.openstack.org/openstack/openstack-helm-infra /opt/openstack-helm-infra' ubuntu
-sudo -H su -c '(cd /opt/openstack-helm-infra; git fetch https://git.openstack.org/openstack/openstack-helm-infra refs/changes/44/517544/1 && git checkout FETCH_HEAD)' ubuntu
+sudo -H su -c '(cd /opt/openstack-helm-infra; git reset --hard 75b656dc58d97dfbf02184c31fb4551ce507c773)' ubuntu
 sudo -H su -c '/opt/openstack-helm-infra/tools/gate/devel/start.sh' ubuntu
 
 sudo -H su -c 'git clone https://git.openstack.org/openstack/openstack-helm /opt/openstack-helm' ubuntu
@@ -19,8 +19,10 @@ sudo -H su -c '(cd /opt/openstack-helm; git reset --hard 4399e39a9cd7b7b878aaf13
 sudo -H su -c '(cd /opt/openstack-helm; sudo -H make pull-all-images)' ubuntu
 sudo -H su -c '(cd /opt/openstack-helm; kubectl replace -f ./tools/kubeadm-aio/assets/opt/rbac/dev.yaml)' ubuntu
 sudo -H su -c '(cd /opt/openstack-helm; make)' ubuntu
-sudo -H pip install python-openstackclient
-sudo -H pip install python-heatclient
+sudo -H pip install python-openstackclient python-heatclient
+
+sudo -H su -c 'git clone https://github.com/portdirect/sydney-workshop.git /opt/sydney-workshop' ubuntu
+sudo -H su -c 'cp -rav /opt/sydney-workshop/*.sh ${HOME}/' ubuntu
 
 sudo -H mkdir -p /etc/openstack
 cat << EOF | sudo -H tee -a /etc/openstack/clouds.yaml

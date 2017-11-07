@@ -2,13 +2,16 @@
 set -x
 
 #NOTE: Deploy command
-helm install /opt/openstack-helm/openvswitch \
+helm install /opt/openstack-helm/heat \
   --namespace=openstack \
-  --name=openvswitch
+  --name=heat
 
 #NOTE: Wait for deploy
 export KUBECONFIG=${HOME}/.kube/config
 /opt/openstack-helm/tools/kubeadm-aio/assets/usr/bin/wait-for-kube-pods openstack
 
 #NOTE: Validate Deployment info
-helm status openvswitch
+export OS_CLOUD=openstack_helm
+openstack service list
+sleep 15
+openstack orchestration service list

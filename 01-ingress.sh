@@ -2,13 +2,13 @@
 set -x
 
 #NOTE: Deploy command
-helm install /opt/openstack-helm/openvswitch \
+helm install /opt/openstack-helm/ingress \
   --namespace=openstack \
-  --name=openvswitch
+  --name=ingress
 
 #NOTE: Wait for deploy
 export KUBECONFIG=${HOME}/.kube/config
 /opt/openstack-helm/tools/kubeadm-aio/assets/usr/bin/wait-for-kube-pods openstack
 
-#NOTE: Validate Deployment info
-helm status openvswitch
+#NOTE: Display info
+helm status ingress

@@ -58,6 +58,27 @@ FLOATING_IP=$(openstack floating ip show \
       -f value -c physical_resource_id) \
       -f value -c floating_ip_address)
 
+function wait_for_ssh_port {
+  # Default wait timeout is 180 seconds
+  set +x
+  end=$(date +%s)
+  if ! [ -z $2 ]; then
+   end=$((end + $2))
+  else
+   end=$((end + 180))
+  fi
+  while true; do
+      # Use Nmap as its the same on Ubuntu and RHEL family distros
+      nmap -Pn -p22 $1 | awk '$1 ~ /22/ {print $2}' | grep -q 'open' && \
+          break || true
+      sleep 1
+      now=$(date +%s)
+      [ $now -gt $end ] && echo "Could not connect to $1 port 22 in time" && exit -1
+  done
+  set -x
+}
+wait_for_ssh_port $FLOATING_IP
+
 # SSH into the VM and check it can reach the outside world
 ssh-keyscan "$FLOATING_IP" >> ~/.ssh/known_hosts
 ssh -i ${HOME}/.ssh/id_rsa cirros@${FLOATING_IP} ping -q -c 1 -W 2 ${OSH_BR_EX_ADDR%/*}
